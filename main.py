@@ -24,6 +24,18 @@ job_data = {
 st.title("🌟 MBTI 기반 직업 추천 사이트 🌟")
 st.markdown("### 당신의 MBTI에 맞는 완벽한 직업을 찾아드립니다 💼✨")
 
+# 🎈 사이트 입장 시 풍선 애니메이션 (1회 자동 + 사이드바에서 재실행)
+if "did_balloons" not in st.session_state:
+    st.session_state.did_balloons = False
+
+replay_balloons = st.sidebar.button("🎈 풍선 다시 보기")
+if replay_balloons:
+    st.balloons()
+
+if not st.session_state.did_balloons:
+    st.balloons()
+    st.session_state.did_balloons = True
+
 # MBTI 선택 💡
 mbti_list = list(job_data.keys())
 selected_mbti = st.selectbox("🔍 MBTI를 선택하세요:", mbti_list)
