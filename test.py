@@ -4,9 +4,9 @@ st.set_page_config(page_title="고양이 집사력 테스트 🐾", page_icon="�
 
 # 화면 입장 효과: 화면 전체에 고양이 이모지가 튀어나오는 느낌
 st.markdown("""
-<div style='font-size:50px; text-align:center;'>
-😺🐱😸😻😹😼😽😿🙀😺🐱😸😻
-</div>
+<h1 style='text-align:center; font-size:60px;'>😺🐱😸😻😹😼😽😿🙀</h1>
+<h1 style='text-align:center; font-size:60px;'>😺🐱😸😻😹😼😽😿🙀</h1>
+<h1 style='text-align:center; font-size:60px;'>😺🐱😸😻😹😼😽😿🙀</h1>
 """, unsafe_allow_html=True)
 
 st.title("🐱 고양이 집사력 테스트 🐾")
