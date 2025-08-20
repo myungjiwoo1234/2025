@@ -2,9 +2,12 @@ import streamlit as st
 
 st.set_page_config(page_title="고양이 집사력 테스트 🐾", page_icon="🐱")
 
-# 화면 입장 효과
-st.markdown("🎉😸🐾🐱😺😻🎊" * 5)
-st.balloons()
+# 화면 입장 효과: 화면 전체에 고양이 이모지가 튀어나오는 느낌
+st.markdown("""
+<div style='font-size:50px; text-align:center;'>
+😺🐱😸😻😹😼😽😿🙀😺🐱😸😻
+</div>
+""", unsafe_allow_html=True)
 
 st.title("🐱 고양이 집사력 테스트 🐾")
 st.write("12가지 질문으로 당신의 집사 점수를 확인해보세요! 😺")
