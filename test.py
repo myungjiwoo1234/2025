@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 
 st.set_page_config(page_title="고양이 집사력 테스트 🐾", page_icon="🐱")
 
@@ -32,10 +33,8 @@ questions = [
      ["새로운 사료를 시도한다 🧭", "그냥 둔다 😼", "시간 지나면 먹을 거라 생각한다 🛋️", "간식 먼저 준다 🐟"]),
 ]
 
-# 결과 점수 계산용 카운트
+# 점수 계산
 scores = {"탐험가 집사 🧭": 0, "츤데레 집사 😼": 0, "집콕 집사 🛋️": 0, "츄르 마스터 집사 🐟": 0}
-
-# 사용자 선택 저장
 answers = []
 
 st.header("🐾 질문 시작!")
@@ -44,20 +43,29 @@ for i, (q, opts) in enumerate(questions, 1):
     answers.append(choice)
 
 if st.button("결과 보기 🐱"):
+    total_score = 0
+    max_possible_score = len(questions) * 3  # 각 문항 최대 가중치 3점 기준
+
     for ans in answers:
         if ans:
             if "🧭" in ans:
-                scores["탐험가 집사 🧭"] += 1
+                scores["탐험가 집사 🧭"] += 3
+                total_score += 3
             elif "😼" in ans:
-                scores["츤데레 집사 😼"] += 1
+                scores["츤데레 집사 😼"] += 3
+                total_score += 3
             elif "🛋️" in ans:
-                scores["집콕 집사 🛋️"] += 1
+                scores["집콕 집사 🛋️"] += 3
+                total_score += 3
             elif "🐟" in ans:
-                scores["츄르 마스터 집사 🐟"] += 1
+                scores["츄르 마스터 집사 🐟"] += 3
+                total_score += 3
 
     best_type = max(scores, key=scores.get)
+    final_score = int(total_score / max_possible_score * 100)  # 100점 만점 환산
 
     st.subheader("🐾 당신의 집사 타입은...")
     st.success(f"✨ {best_type} ✨")
 
-    st.write("고양이 집사 점수 : ", sum(scores.values()), "점 / 12점 🐱🐾")
+    st.write(f"고양이 집사 점수: {final_score}점 / 100점 🐱🐾")
+    st.progress(final_score)
