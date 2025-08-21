@@ -9,27 +9,19 @@ st.write("조건을 바꿔가며 **세균 성장 곡선**과 **항생제 효과*
 
 # ---- 조건 선택 ----
 N0_option = st.radio("초기 세균 수 (N0)", ["작음", "보통", "많음"])
-if N0_option == "작음":
-    N0 = 100
-elif N0_option == "보통":
-    N0 = 1000
-else:
-    N0 = 5000
+N0 = {"작음":100, "보통":1000, "많음":5000}[N0_option]
 
 r = st.slider("세균 성장 속도 (r)", 0.1, 1.0, 0.5, 0.1)
 
 t_option = st.radio("배양 시간", ["짧음", "보통", "김"])
-if t_option == "짧음":
-    t_max = 30
-elif t_option == "보통":
-    t_max = 60
-else:
-    t_max = 100
+t_max = {"짧음":30, "보통":60, "김":100}[t_option]
 
 K = 100000  # 최대 수용능 고정
 
-# ---- 항생제 투여 여부 선택 ----
+# ---- 항생제 투여 여부 및 투여 시점 선택 ----
 antibiotic = st.checkbox("항생제 투여")
+if antibiotic:
+    t_antibiotic = st.slider("항생제 투여 시점 (시간)", 0, t_max, int(t_max*0.1), 1)
 
 # ---- 시뮬레이션 ----
 t = np.linspace(0, t_max, 500)
@@ -37,14 +29,21 @@ t = np.linspace(0, t_max, 500)
 # 정상 성장
 N_normal = (K * N0 * np.exp(r*t)) / (K + N0 * (np.exp(r*t) - 1))
 
-# 항생제 투여 (성장 속도 절반, 최대 수용능 절반)
+# 항생제 효과 계산
 r_antibiotic = r * 0.5
 K_antibiotic = K * 0.5
-N_antibiotic = (K_antibiotic * N0 * np.exp(r_antibiotic*t)) / (K_antibiotic + N0 * (np.exp(r_antibiotic*t) - 1))
 
-# ---- 선택에 따른 출력 ----
 if antibiotic:
-    N_growth = N_antibiotic
+    # 항생제 투여 전
+    N_growth = np.zeros_like(t)
+    for i, time in enumerate(t):
+        if time < t_antibiotic:
+            N_growth[i] = (K * N0 * np.exp(r*time)) / (K + N0 * (np.exp(r*time) - 1))
+        else:
+            # 항생제 투여 후, 초기값은 직전 값
+            N0_eff = N_growth[i-1]
+            dt = time - t[i-1]
+            N_growth[i] = (K_antibiotic * N0_eff * np.exp(r_antibiotic*dt)) / (K_antibiotic + N0_eff * (np.exp(r_antibiotic*dt) - 1))
     label = "Antibiotic O (Growth Inhibited)"
     color = "red"
 else:
@@ -53,12 +52,28 @@ else:
     color = "blue"
 
 # ---- 그래프 출력 ----
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8,5))
 ax.plot(t, N_growth, label=label, color=color)
+
+# ---- 성장 단계 시각화 ----
+lag_end = t_max * 0.1
+log_end = t_max * 0.5
+stationary_end = t_max * 0.8
+
+ax.axvspan(0, lag_end, color='gray', alpha=0.2, label='Lag phase')
+ax.axvspan(lag_end, log_end, color='green', alpha=0.2, label='Log phase')
+ax.axvspan(log_end, stationary_end, color='yellow', alpha=0.2, label='Stationary phase')
+ax.axvspan(stationary_end, t_max, color='orange', alpha=0.2, label='Death phase')
+
+# 항생제 투여 시점 표시
+if antibiotic:
+    ax.axvline(x=t_antibiotic, color='purple', linestyle='--', label='Antibiotic Applied')
+
 ax.set_xlabel("Time (hours)")
 ax.set_ylabel("Bacterial Count (N)")
-ax.set_title("Bacterial Growth Curve")
-ax.legend()
+ax.set_title("Bacterial Growth Curve with Phases and Antibiotic")
+ax.legend(loc='upper left', bbox_to_anchor=(1,1))
+
 st.pyplot(fig)
 
 # ---- 단계별 설명 ----
@@ -74,6 +89,6 @@ st.markdown("""
 st.subheader("📊 해석 포인트")
 st.markdown("""
 - 항생제를 투여하면 성장 속도와 최대 세균 수가 줄어 세균 증식이 억제됨  
-- 라디오 버튼과 슬라이더로 초기 조건을 바꿔보면서, 항생제 효과와 세균 성장 관계를 탐구해보세요!  
-- 이를 통해 교과서적 성장 곡선과 실제 조건 변화의 차이를 직관적으로 이해할 수 있습니다.
+- 투여 시점을 조절하여, 초기에 투여 vs 나중에 투여했을 때 성장 곡선 변화 비교 가능  
+- 라디오 버튼과 슬라이더로 초기 조건을 바꿔보면서, 항생제 효과와 각 성장 단계의 변화를 탐구해보세요!
 """)
