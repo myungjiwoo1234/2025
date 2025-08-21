@@ -1,63 +1,110 @@
 import streamlit as st
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-# 페이지 기본 설정
-st.set_page_config(page_title="세균 성장 실험 🦠💊🐱", page_icon="🐱", layout="centered")
+st.set_page_config(page_title="세균 성장 곡선 시뮬레이터 🧫", page_icon="🦠")
 
-# 타이틀
-st.title("🐱🦠 세균 성장 & 항생제 효과 시뮬레이션 💊✨")
+# ---- 배경 이모지 연출 ----
+st.markdown("""
+<style>
+@keyframes drop {
+  0% { transform: translateY(-10px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(800px); opacity: 0; }
+}
+.emoji {
+  font-size: 2rem;
+  position: fixed;
+  top: -50px;
+  animation: drop linear infinite;
+  pointer-events: none;
+}
+</style>
+<div class="emoji" style="left:10%;">🦠</div>
+<div class="emoji" style="left:30%;">🧫</div>
+<div class="emoji" style="left:50%;">🧬</div>
+<div class="emoji" style="left:70%;">🧪</div>
+<div class="emoji" style="left:90%;">🔬</div>
+""", unsafe_allow_html=True)
 
-# 데이터 생성
-time = np.linspace(0, 80, 500)  # 0~80일까지
-growth = 1 / (1 + np.exp(-0.2 * (time - 20)))  # 세균 성장
-antibiotic_effect = np.where(time > 40, np.exp(-0.1 * (time - 40)), 1)  
-population = growth * antibiotic_effect
+st.title("🦠 세균 성장 곡선 시뮬레이터 (Death phase 포함)")
+st.write("조건을 바꿔가며 **세균 성장 곡선**과 **항생제 효과**, 각 성장 단계를 확인해보세요!")
 
-# 그래프 그리기
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.set_facecolor("#FFF5F7")  # 파스텔톤 배경
-fig.patch.set_facecolor("#FFF0F5")
+# ---- 조건 선택 ----
+N0_option = st.radio("초기 세균 수 (N0)", ["작음", "보통", "많음"])
+N0 = {"작음":100, "보통":1000, "많음":5000}[N0_option]
 
-ax.plot(time, growth, label="세균 성장 🦠", color="#FF69B4", linewidth=2.5)
-ax.plot(time, antibiotic_effect, label="항생제 효과 💊", color="#00CED1", linestyle="--", linewidth=2.5)
-ax.plot(time, population, label="실제 개체 수", color="#32CD32", linewidth=3)
+r = st.slider("세균 성장 속도 (r)", 0.1, 1.0, 0.5, 0.1)
+d = st.slider("세포 사멸률 (Death rate)", 0.0, 0.05, 0.01, 0.001)
 
-# 항생제 투여 시점 표시
-ax.axvline(x=40, color="red", linestyle=":", linewidth=2)
-ax.text(41, 0.5, "💊 항생제 투여", color="red", fontsize=14)
+t_option = st.radio("배양 시간", ["짧음", "보통", "김"])
+t_max = {"짧음":30, "보통":60, "김":100}[t_option]
 
-# 꾸미기
-ax.set_xlabel("시간 (일)", fontsize=14, color="#333")
-ax.set_ylabel("상대적 세균 수", fontsize=14, color="#333")
-ax.set_title("🦠 세균 성장과 항생제 효과 💊", fontsize=18, color="#FF1493", weight="bold")
-ax.legend(fontsize=12)
+K = 100000  # 최대 수용능
 
+# ---- 항생제 투여 여부 및 투여 시점 ----
+antibiotic = st.checkbox("항생제 투여")
+if antibiotic:
+    t_antibiotic = st.slider("항생제 투여 시점 (시간)", 0, t_max, int(t_max*0.1), 1)
+
+# ---- 시뮬레이션 ----
+t = np.linspace(0, t_max, 500)
+dt = t[1] - t[0]
+
+N_growth = np.zeros_like(t)
+N_growth[0] = N0
+r_eff = r
+K_eff = K
+
+for i in range(1, len(t)):
+    time = t[i]
+    if antibiotic and time >= t_antibiotic:
+        r_eff = r * 0.5
+        K_eff = K * 0.5
+    N_growth[i] = N_growth[i-1] + (r_eff * N_growth[i-1] * (1 - N_growth[i-1]/K_eff) - d * N_growth[i-1]) * dt
+    if N_growth[i] < 0:
+        N_growth[i] = 0
+
+# ---- 그래프 출력 ----
+fig, ax = plt.subplots(figsize=(14,7))  # 그래프 영역 키움
+ax.plot(t, N_growth, label="Bacterial Count", color="blue" if not antibiotic else "red")
+
+# 성장 단계 시각화
+lag_end = t_max * 0.1
+log_end = t_max * 0.5
+stationary_end = t_max * 0.8
+
+ax.axvspan(0, lag_end, color='gray', alpha=0.2, label='Lag phase')
+ax.axvspan(lag_end, log_end, color='green', alpha=0.2, label='Log phase')
+ax.axvspan(log_end, stationary_end, color='yellow', alpha=0.2, label='Stationary phase')
+ax.axvspan(stationary_end, t_max, color='orange', alpha=0.2, label='Death phase')
+
+if antibiotic:
+    ax.axvline(x=t_antibiotic, color='purple', linestyle='--', label='Antibiotic Applied')
+
+ax.set_xlabel("Time (hours)")
+ax.set_ylabel("Bacterial Count (N)")
+ax.set_title("Bacterial Growth Curve with Death Phase and Antibiotic")
+
+# x축 눈금 그대로 유지
+ax.set_xticks(np.linspace(0, t_max, 6))
+ax.set_ylim(bottom=0)  # y축 0부터 시작
+
+ax.legend(loc='upper left', bbox_to_anchor=(1,1))
 st.pyplot(fig)
 
-# 귀여운 고양이 이모지 눈처럼 떨어지는 효과 (CSS 애니메이션)
-st.markdown(
-    """
-    <style>
-    body {
-        background-color: #fff0f5;
-    }
-    .emoji {
-        position: fixed;
-        top: -50px;
-        font-size: 30px;
-        animation: fall 8s linear infinite;
-    }
-    @keyframes fall {
-        0% {transform: translateY(-50px);}
-        100% {transform: translateY(100vh);}
-    }
-    </style>
-    <div class="emoji" style="left: 10%;">🐱</div>
-    <div class="emoji" style="left: 30%;">🐱</div>
-    <div class="emoji" style="left: 50%;">🐱</div>
-    <div class="emoji" style="left: 70%;">🐱</div>
-    <div class="emoji" style="left: 90%;">🐱</div>
-    """,
-    unsafe_allow_html=True
-)
+# ---- 단계별 설명 ----
+st.subheader("📖 성장 단계 설명")
+st.markdown("""
+- **유도기 (Lag phase)**: 환경에 적응, 성장은 미미  
+- **대수기 (Log phase)**: 세포 분열 활발, 세균 수 급증  
+- **정지기 (Stationary phase)**: 영양분 부족, 세균 수 일정  
+- **사멸기 (Death phase)**: 세포 사멸률 > 증식률, 세균 수 감소  
+""")
+
+st.subheader("📊 해석 포인트")
+st.markdown("""
+- Death rate(d)를 조절하면 사멸기에서 세균 수 감소 관찰 가능  
+- 항생제 투여 시점과 조건을 바꿔, 성장 억제와 사멸기 변화를 탐구  
+
+""")
