@@ -1,20 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import font_manager, rc
 
-# -----------------------------
-# 한글 폰트 설정 (NanumGothic 사용 예시)
-# -----------------------------
-# Streamlit Cloud / Linux 환경에서 NanumGothic 설치 필요: apt-get install fonts-nanum
-font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-font_name = font_manager.FontProperties(fname=font_path).get_name()
-rc('font', family=font_name)
-plt.rcParams['axes.unicode_minus'] = False  # 음수 표시 깨짐 방지
-
-# -----------------------------
-# Streamlit 페이지 설정
-# -----------------------------
 st.set_page_config(page_title="세균 성장 곡선 시뮬레이터 🧫", page_icon="🦠")
 
 st.title("🦠 세균 성장 곡선 시뮬레이터")
@@ -58,19 +45,19 @@ N_antibiotic = (K_antibiotic * N0 * np.exp(r_antibiotic*t)) / (K_antibiotic + N0
 # ---- 선택에 따른 출력 ----
 if antibiotic:
     N_growth = N_antibiotic
-    label = "항생제 O (성장 억제)"
+    label = "Antibiotic O (Growth Inhibited)"
     color = "red"
 else:
     N_growth = N_normal
-    label = "항생제 X (정상 성장)"
+    label = "Antibiotic X (Normal Growth)"
     color = "blue"
 
 # ---- 그래프 출력 ----
 fig, ax = plt.subplots()
 ax.plot(t, N_growth, label=label, color=color)
-ax.set_xlabel("시간 (시간)")
-ax.set_ylabel("세균 수 (N)")
-ax.set_title("세균 성장 곡선")
+ax.set_xlabel("Time (hours)")
+ax.set_ylabel("Bacterial Count (N)")
+ax.set_title("Bacterial Growth Curve")
 ax.legend()
 st.pyplot(fig)
 
@@ -90,4 +77,3 @@ st.markdown("""
 - 라디오 버튼과 슬라이더로 초기 조건을 바꿔보면서, 항생제 효과와 세균 성장 관계를 탐구해보세요!  
 - 이를 통해 교과서적 성장 곡선과 실제 조건 변화의 차이를 직관적으로 이해할 수 있습니다.
 """)
-
