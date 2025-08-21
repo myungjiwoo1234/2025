@@ -1,19 +1,24 @@
-import matplotlib.pyplot as plt
-from matplotlib import font_manager, rc
-
-font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"  # 설치된 폰트 경로
-font_name = font_manager.FontProperties(fname=font_path).get_name()
-rc('font', family=font_name)
-plt.rcParams['axes.unicode_minus'] = False
-
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
 
+# -----------------------------
+# 한글 폰트 설정 (NanumGothic 사용 예시)
+# -----------------------------
+# Streamlit Cloud / Linux 환경에서 NanumGothic 설치 필요: apt-get install fonts-nanum
+font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+font_name = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font_name)
+plt.rcParams['axes.unicode_minus'] = False  # 음수 표시 깨짐 방지
+
+# -----------------------------
+# Streamlit 페이지 설정
+# -----------------------------
 st.set_page_config(page_title="세균 성장 곡선 시뮬레이터 🧫", page_icon="🦠")
 
 st.title("🦠 세균 성장 곡선 시뮬레이터")
-st.write("조건을 바꿔가며 **세균 성장 곡선**과 **항생제 효과**를 직접 확인해보세요!")
+st.write("조건을 바꿔가며 **세균 성장 곡선**과 **항생제 효과**를 확인해보세요!")
 
 # ---- 조건 선택 ----
 N0_option = st.radio("초기 세균 수 (N0)", ["작음", "보통", "많음"])
@@ -63,11 +68,10 @@ else:
 # ---- 그래프 출력 ----
 fig, ax = plt.subplots()
 ax.plot(t, N_growth, label=label, color=color)
-ax.set_xlabel("시간")
+ax.set_xlabel("시간 (시간)")
 ax.set_ylabel("세균 수 (N)")
 ax.set_title("세균 성장 곡선")
 ax.legend()
-
 st.pyplot(fig)
 
 # ---- 단계별 설명 ----
@@ -86,3 +90,4 @@ st.markdown("""
 - 라디오 버튼과 슬라이더로 초기 조건을 바꿔보면서, 항생제 효과와 세균 성장 관계를 탐구해보세요!  
 - 이를 통해 교과서적 성장 곡선과 실제 조건 변화의 차이를 직관적으로 이해할 수 있습니다.
 """)
+
