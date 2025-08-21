@@ -27,7 +27,7 @@ st.markdown("""
 <div class="emoji" style="left:90%;">🔬</div>
 """, unsafe_allow_html=True)
 
-st.title("🦠 세균 성장 곡선 시뮬레이터 (Death phase 포함)")
+st.title("🦠 세균 성장 곡선 시뮬레이터 ")
 st.write("조건을 바꿔가며 **세균 성장 곡선**과 **항생제 효과**, 각 성장 단계를 확인해보세요!")
 
 # ---- 조건 선택 ----
